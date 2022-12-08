@@ -45,10 +45,10 @@ cd src
 
 # run experiment
 python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_init_seed 1001 --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/ad/mvtec/data/ --download_data True --smart_samp 0 --k 1 --alpha 1 --task test --pretrain 1 --model_type 'RESNET'
-` ```
+
+```
 
 
-The train script takes the following parameters;
 ```
 parser.add_argument('-m', '--model_name', type=str, required=True)
     parser.add_argument('--model_type', choices = ['CIFAR_VGG3','CIFAR_VGG4','MNIST_VGG3', 'MNIST_LENET', 'CIFAR_LENET', 'RESNET'], required=True)
