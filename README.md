@@ -32,14 +32,20 @@ while read requirement; do conda install -n myenv --yes $requirement; done < req
 
 ## Running Experiments
 
-### MVTecAD
-Example command to train a model with normal class equal to 'wood' for MVTec dataset.
+### MVTec AD Example
 
 ```
+cd <path-to-FewSOME-directory>
+
+# activate virtual environment
+source activate myenv
+
+# change to source directory
+cd src
+
+# run experiment
 python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_init_seed 1001 --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/ad/mvtec/data/ --download_data True --smart_samp 0 --k 1 --alpha 1 --task test --pretrain 1 --model_type 'RESNET'
-```
-
-
+` ```
 
 
 The train script takes the following parameters;
