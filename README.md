@@ -20,8 +20,6 @@ git clone https://github.com/pakdd2023anon1/FewSOME.git
 
 To run the code, set up a virtual environment in conda:
 
-
-conda 
 ```
 cd <path-to-FewSOME-directory>
 conda create --name myenv
@@ -98,6 +96,8 @@ python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_in
 
 ```
 
+
+## Desription of arguments for train.py
 
 ```
 parser.add_argument('-m', '--model_name', type=str, required=True)
