@@ -45,7 +45,7 @@ source activate myenv
 cd src
 
 # run experiment
-python3 train.py -m model --num_ref_eval 30 --lr 1e-6 --batch_size 1 --weight_init_seed 1001 --dataset 'mnist' --normal_class 6 -N 30 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.8 --task test --pretrain 1 --model_type 'MNIST_VGG3'
+python3 train.py -m model --num_ref_eval 30 --lr 1e-6 --batch_size 1 --weight_init_seed 1001 --dataset 'mnist' --normal_class 6 -N 30 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.8 --vector_size 1024 --task test --pretrain 1 --model_type 'MNIST_VGG3'
 
 ```
 
@@ -61,7 +61,23 @@ source activate myenv
 cd src
 
 # run experiment
-python3 train.py -m model --num_ref_eval 30 --lr 1e-5 --batch_size 1 --weight_init_seed 1001 --dataset 'cifar10' --normal_class 0 -N 30 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.5 --task test --pretrain 1 --model_type 'CIFAR_VGG3'
+python3 train.py -m model --num_ref_eval 30 --lr 1e-5 --batch_size 1 --weight_init_seed 1001 --dataset 'cifar10' --normal_class 0 -N 30 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.5 --vector_size 2048 --task test --pretrain 1 --model_type 'CIFAR_VGG3'
+
+```
+
+### Fashion-MNIST Example
+
+```
+cd <path-to-FewSOME-directory>
+
+# activate virtual environment
+source activate myenv
+
+# change to source directory
+cd src
+
+# run experiment
+python3 train.py -m model --num_ref_eval 30 --lr 1e-4 --batch_size 16 --weight_init_seed 1001 --dataset 'fashion' --normal_class 9 -N 30 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.1 --vector_size 2048 --task test --pretrain 1 --model_type 'FASHION_VGG3'
 
 ```
 
