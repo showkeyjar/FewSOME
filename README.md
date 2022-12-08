@@ -30,7 +30,9 @@ while read requirement; do conda install -n myenv --yes $requirement; done < req
 ```
 
 
+## Running Experiments
 
+### MVTecAD
 Example command to train a model with normal class equal to 'wood' for MVTec dataset.
 
 ```
