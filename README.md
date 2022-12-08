@@ -1,11 +1,25 @@
 # FewSOME
 
-This is the official repository for FewSOME.
+This repository contains a Pytorch implementation of FewSOME: Onec-Class Few Shot Anomaly Detection with Siamese Networks.
+
+
+## Citation 
+
+## Abstract
+
+
+## Installation 
+This code is written in Python 3.8 and requires the packages listed in requirements.txt.
+
+Use the following command to clone the repository to your local machine:
 
 
 ```
 git clone https://github.com/pakdd2023anon1/FewSOME.git
 ```
+
+To run the code, we recommend setting up a virtual environment, e.g. using virtualenv or conda:
+
 
 conda 
 ```
@@ -14,6 +28,16 @@ conda create --name myenv
 source activate myenv
 while read requirement; do conda install -n myenv --yes $requirement; done < requirements.txt
 ```
+
+
+
+Example command to train a model with normal class equal to 'wood' for MVTec dataset.
+
+```
+python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_init_seed 1001 --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/ad/mvtec/data/ --download_data True --smart_samp 0 --k 1 --alpha 1 --task test --pretrain 1 --model_type 'RESNET'
+```
+
+
 
 
 The train script takes the following parameters;
@@ -104,13 +128,6 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
 '--biases' - specify whether to turn off or on biases. 
 
 '-i' - specify indexes of training set to have as a reference set 
-
-
-Example command to train a model with normal class equal to 'wood' for MVTec dataset.
-
-```
-python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_init_seed 1001 --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/ad/mvtec/data/ --download_data True --smart_samp 0 --k 1 --alpha 1 --task test --pretrain 1 --model_type 'RESNET'
-```
 
 
 
