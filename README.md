@@ -18,7 +18,7 @@ Use the following command to clone the repository to your local machine:
 git clone https://github.com/pakdd2023anon1/FewSOME.git
 ```
 
-To run the code, we recommend setting up a virtual environment, e.g. using virtualenv or conda:
+To run the code, set up a virtual environment in conda:
 
 
 conda 
