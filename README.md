@@ -1,5 +1,12 @@
 # FewSOME
 
+This is the official repository for FewSOME.
+
+
+```
+git clone https://github.com/pakdd2023anon1/FewSOME.git
+```
+
 conda 
 ```
 cd <path-to-FewSOME-directory>
@@ -102,7 +109,7 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
 Example command to train a model with normal class equal to 'wood' for MVTec dataset.
 
 ```
-python3 train.py -m model  --num_ref_eval 60 --lr  1e-4 --batch_size 1  --weight_init_seed 1001 —model_type 'RESNET' --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 0  --epochs 100 --data_path ~/mvtec/data/ --download_data False --smart_samp 0 --k 1 --alpha 1—task test  --pretrain 1
+python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_init_seed 1001 --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/ad/mvtec/data/ --download_data True --smart_samp 0 --k 1 --alpha 1 --task test --pretrain 1 --model_type 'RESNET'
 ```
 
 
