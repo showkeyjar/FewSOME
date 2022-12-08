@@ -1,5 +1,13 @@
 # FewSOME
 
+conda 
+```
+cd <path-to-FewSOME-directory>
+conda create --name myenv
+source activate myenv
+while read requirement; do conda install -n myenv --yes $requirement; done < requirements.txt
+```
+
 
 The train script takes the following parameters;
 ```
