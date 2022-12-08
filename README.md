@@ -32,6 +32,23 @@ while read requirement; do conda install -n myenv --yes $requirement; done < req
 
 ## Running Experiments
 
+
+### MNIST Example
+
+```
+cd <path-to-FewSOME-directory>
+
+# activate virtual environment
+source activate myenv
+
+# change to source directory
+cd src
+
+# run experiment
+python3 train.py -m model --num_ref_eval 30 --lr 1e-6 --batch_size 1 --weight_init_seed 1001 --dataset 'mnist' --normal_class 6 -N 30 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.8 --task test --pretrain 1 --model_type 'MNIST_VGG3'
+
+```
+
 ### MVTec AD Example
 
 ```
