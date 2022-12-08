@@ -101,7 +101,7 @@ python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_in
 
 ```
 parser.add_argument('-m', '--model_name', type=str, required=True)
-    parser.add_argument('--model_type', choices = ['CIFAR_VGG3','CIFAR_VGG4','MNIST_VGG3', 'MNIST_LENET', 'CIFAR_LENET', 'RESNET'], required=True)
+    parser.add_argument('--model_type', choices = ['CIFAR_VGG3','CIFAR_VGG4','MVTEC_VGG3','MNIST_VGG3', 'MNIST_LENET', 'CIFAR_LENET', 'RESNET', 'FASHION_VGG3'], required=True)
     parser.add_argument('--dataset', type=str, required=True)
     parser.add_argument('--normal_class', type=int, default = 0)
     parser.add_argument('-N', '--num_ref', type=int, default = 30)
@@ -127,6 +127,10 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
     parser.add_argument('--augment_no', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--biases', type=int, default=1)
+    parser.add_argument('--stop_gradient', type=int, default=1)
+    parser.add_argument('--num_ref_dist', type=int, default=None)
+    parser.add_argument('--anchor_dist', type=int, default=0)
+    parser.add_argument('--mean_dist', type=int, default=0)
     parser.add_argument('-i', '--index', help='string with indices separated with comma and whitespace', type=str, default = [], required=False)
 
 ```
