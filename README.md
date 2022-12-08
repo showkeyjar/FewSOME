@@ -1,10 +1,6 @@
 # FewSOME
 
 
-# Siamese_Anomaly
-
-
-
 The train script takes the following parameters;
 ```
 parser.add_argument('-m', '--model_name', type=str, required=True)
