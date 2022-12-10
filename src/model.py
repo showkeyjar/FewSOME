@@ -25,29 +25,19 @@ class CIFAR_VGG4_pre(nn.Module):
 
       self.act = nn.LeakyReLU()
       self.block1=models.vgg16(pretrained = True).features[0]
-    #
       self.bn1 = nn.BatchNorm2d(64, eps=1e-04, affine=False)
 
       self.block2=models.vgg16(pretrained = True).features[2]
-    #  self.block2.bias.requires_grad = False
 
       self.block3=models.vgg16(pretrained = True).features[4:6]
-#      self.block3[1].bias.requires_grad = False
       self.block4=models.vgg16(pretrained = True).features[7]
-#      self.block4.bias.requires_grad = False
       self.block5=models.vgg16(pretrained = True).features[9:11]
-#      self.block5[1].bias.requires_grad = False
       self.block6=models.vgg16(pretrained = True).features[12]
-#      self.block6.bias.requires_grad = False
       self.block7=models.vgg16(pretrained = True).features[14]
-#      self.block7.bias.requires_grad = False
       self.block8=models.vgg16(pretrained = True).features[16:18]
-#      self.block8[1].bias.requires_grad = False
 
       self.block9=models.vgg16(pretrained = True).features[19]
-#      self.block9.bias.requires_grad = False
       self.block10=models.vgg16(pretrained = True).features[21]
-#      self.block10.bias.requires_grad = False
       self.block11=models.vgg16(pretrained = True).features[23]
       self.classifier = nn.Linear(2048, vector_size,bias=False)
 
@@ -96,68 +86,6 @@ class CIFAR_VGG4_pre(nn.Module):
 
 
 
-class CIFAR_VGG4(nn.Module):
-  def __init__(self,vector_size, biases):
-      super(CIFAR_VGG4, self).__init__()
-
-      self.act = nn.LeakyReLU()
-      self.block1=models.vgg16().features[0]
-      self.bn1 = nn.BatchNorm2d(64, eps=1e-04, affine=False)
-
-      self.block2=models.vgg16().features[2]
-
-      self.block3=models.vgg16().features[4:6]
-      self.block4=models.vgg16().features[7]
-      self.block5=models.vgg16().features[9:11]
-      self.block6=models.vgg16().features[12]
-      self.block7=models.vgg16().features[14]
-      self.block8=models.vgg16().features[16:18]
-      self.block9=models.vgg16().features[19]
-      self.block10=models.vgg16().features[21]
-      self.block11=models.vgg16().features[23]
-      self.classifier = nn.Linear(2048, vector_size,bias=False)
-
-      if biases == 0:
-          self.block1.bias.requires_grad = False
-          self.block2.bias.requires_grad = False
-          self.block3[1].bias.requires_grad = False
-          self.block4.bias.requires_grad = False
-          self.block5[1].bias.requires_grad = False
-          self.block6.bias.requires_grad = False
-          self.block7.bias.requires_grad = False
-          self.block8[1].bias.requires_grad = False
-          self.block9.bias.requires_grad = False
-          self.block9.bias.requires_grad = False
-
-  def forward(self, x):
-      x = torch.unsqueeze(x, dim =0)
-      x= self.block1(x)
-    #  x=self.bn1(x)
-      x=self.act(x)
-      x= self.block2(x)
-      x=self.act(x)
-      x= self.block3(x)
-      x=self.act(x)
-      x= self.block4(x)
-      x=self.act(x)
-      x= self.block5(x)
-      x=self.act(x)
-      x= self.block6(x)
-      x=self.act(x)
-      x= self.block7(x)
-      x=self.act(x)
-      x= self.block8(x)
-      x=self.act(x)
-      x= self.block9(x)
-      x=self.act(x)
-      x= self.block10(x)
-      x=self.act(x)
-      x= self.block11(x)
-      x=self.act(x)
-      x = x.view(x.size(0), -1)
-      x = self.classifier(x)
-#      x=nn.Sigmoid()(x)
-      return x #output
 
 
 class CIFAR_VGG3(nn.Module):
@@ -264,25 +192,18 @@ class CIFAR_VGG3_pre(nn.Module):
       x=self.bn1(x)
       x=self.act(x)
       x= self.block2(x)
-    #  x=self.bn2(x)
       x=self.act(x)
       x= self.block3(x)
-    #  x=self.bn3(x)
       x=self.act(x)
       x= self.block4(x)
-    #  x=self.bn4(x)
       x=self.act(x)
       x= self.block5(x)
-     # x=self.bn5(x)
       x=self.act(x)
       x= self.block6(x)
-     # x=self.bn6(x)
       x=self.act(x)
       x= self.block7(x)
-    #  x=self.bn7(x)
       x=self.act(x)
       x= self.block8(x)
-    #  x=self.bn8(x)
       x=self.act(x)
 
 
@@ -338,25 +259,18 @@ class FASHION_VGG3_pre(nn.Module):
       x=self.bn1(x)
       x=self.act(x)
       x= self.block2(x)
-    #  x=self.bn2(x)
       x=self.act(x)
       x= self.block3(x)
-    #  x=self.bn3(x)
       x=self.act(x)
       x= self.block4(x)
-    #  x=self.bn4(x)
       x=self.act(x)
       x= self.block5(x)
-     # x=self.bn5(x)
       x=self.act(x)
       x= self.block6(x)
-     # x=self.bn6(x)
       x=self.act(x)
       x= self.block7(x)
-    #  x=self.bn7(x)
       x=self.act(x)
       x= self.block8(x)
-    #  x=self.bn8(x)
       x=self.act(x)
 
 
@@ -390,7 +304,6 @@ class MVTEC_VGG3_pre(nn.Module):
       self.block6=models.vgg16(pretrained = True).features[12]
       self.block7=models.vgg16(pretrained = True).features[14]
       self.block8=models.vgg16(pretrained = True).features[16]
-     # self.classifier = nn.Linear(16384, vector_size,bias=False)
       self.classifier = nn.Linear(65536, vector_size,bias=False)
 
 
@@ -411,25 +324,18 @@ class MVTEC_VGG3_pre(nn.Module):
       x=self.bn1(x)
       x=self.act(x)
       x= self.block2(x)
-    #  x=self.bn2(x)
       x=self.act(x)
       x= self.block3(x)
-    #  x=self.bn3(x)
       x=self.act(x)
       x= self.block4(x)
-    #  x=self.bn4(x)
       x=self.act(x)
       x= self.block5(x)
-     # x=self.bn5(x)
       x=self.act(x)
       x= self.block6(x)
-     # x=self.bn6(x)
       x=self.act(x)
       x= self.block7(x)
-    #  x=self.bn7(x)
       x=self.act(x)
       x= self.block8(x)
-    #  x=self.bn8(x)
       x=self.act(x)
 
 
@@ -546,7 +452,6 @@ class MNIST_VGG3_pre(nn.Module):
 
 
 
-#lenet without last layers and max pooling
 
 class MNIST_LeNet(nn.Module):
 
@@ -604,7 +509,6 @@ class MNIST_LeNt(nn.Module):
 
     def forward(self, x):
         x = torch.unsqueeze(x, dim =0)
-    #    x = x.view(x.shape[0],1,28,28)
         x = self.conv1(x)
         x = self.pool(F.leaky_relu(self.bn1(x)))
         x = self.conv2(x)
@@ -612,7 +516,6 @@ class MNIST_LeNt(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         x=nn.Sigmoid()(x)
-    #    x = self.fc2(x)
         return x
 
 
@@ -630,13 +533,7 @@ class CIFAR_LeNet(nn.Module):
         self.conv2 = nn.Conv2d(16, 32, 5, 1, 2, bias=False)
         self.classifier = nn.Linear(2048, vector_size, bias=False)
 
-       # self.classifier = nn.Linear(1568, 512)
-
-     #   self.classifier = nn.Linear(1568, 64)
-
-      #  self.classifier = nn.Linear(1568, 2048)
-
-
+     
     def forward(self, x):
         x=x.unsqueeze(0)
         x = nn.MaxPool2d(kernel_size=2)(F.leaky_relu(self.conv1(x)))
