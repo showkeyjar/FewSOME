@@ -24,26 +24,21 @@ class ContrastiveLoss(torch.nn.Module):
         #get the euclidean distance between output1 and all other vectors
         for i in vectors:
           euclidean_distance += (F.pairwise_distance(output1, i)/ torch.sqrt(torch.Tensor([output1.size()[1]])).cuda())
-        #  euclidean_distance += (F.cosine_similarity(output1, i)) / torch.sqrt(torch.Tensor([output1.size()[1]])).cuda()
-          #euclidean_distance +=  torch.sum(torch.mul(output1, i)) / (torch.mul (torch.sqrt ( torch.sum( torch.square(output1) )),  torch.sqrt ( torch.sum( torch.square(i) ))      )   )
+       
 
         euclidean_distance += alpha*((F.pairwise_distance(output1, feat1)) /torch.sqrt(torch.Tensor([output1.size()[1]])).cuda() )
-        #euclidean_distance += alpha*(torch.sum(torch.mul(output1, i)) / (torch.mul (torch.sqrt ( torch.sum( torch.square(output1) )),  torch.sqrt ( torch.sum( torch.square(i) ))      )   ).cuda() )
 
         #calculate the margin
         marg = (len(vectors) + alpha) * self.margin
 
-        #penalty = (1 / (torch.sum(output1) / output1.size()[1] ) )  * 100  #output values are between 0 and 1 so don't need to square
-    #    euclidean_distance = euclidean_distance + penalty
+      
         #if v > 0.0, implement soft-boundary
         if self.v > 0.0:
             euclidean_distance = (1/self.v) * euclidean_distance
         #calculate the loss
-    #    loss_contrastive = torch.log(euclidean_distance)
-    #    loss_contrastive = ((1-label) * euclidean_distance ) + ( (label) * torch.max(torch.Tensor([ torch.tensor(0), marg - euclidean_distance])) )
+    
         loss_contrastive = ((1-label) * torch.pow(euclidean_distance, 2) * 0.5) + ( (label) * torch.pow(torch.max(torch.Tensor([ torch.tensor(0), marg - euclidean_distance])), 2) * 0.5)
-    #    print(euclidean_distance)
-    #    print(loss_contrastive)
+  
         return loss_contrastive
 
 
@@ -149,12 +144,7 @@ def evaluate(feat1, freeze , seed, base_ind, ref_dataset, val_dataset, model, da
 
     cols = ['label','minimum_dists', 'means']
     df = pd.concat([pd.DataFrame(labels, columns = ['label']), pd.DataFrame(minimum_dists, columns = ['minimum_dists']),  pd.DataFrame(means, columns = ['means'])], axis =1)
-    print('The mean D(x) of anomalies is {}'.format(np.mean(df['means'].loc[df['label'] == 1])))
-    print('The mean D(x) of normal datapoints is {}'.format(np.mean(df['means'].loc[df['label'] == 0])))
-
-    #if anchor_dist ==1:
-    #    df= pd.concat([df, pd.DataFrame(outs['outputs{}'.format(base_ind)])], axis =1)
-    #    cols.append('ref{}'.format(base_ind))
+   
     if (anchor_dist ==0) & (mean_dist == 0):
         for i in range(0, num_ref_eval):
             df= pd.concat([df, pd.DataFrame(outs['outputs{}'.format(i)])], axis =1)
