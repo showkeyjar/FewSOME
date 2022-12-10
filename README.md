@@ -82,7 +82,7 @@ python3 train.py -m model --num_ref_eval 30 --lr 1e-4 --batch_size 16 --weight_i
 
 
 ### MVTec AD Example
-
+This experiment requires the data to be downloaded from https://www.mvtec.com/company/research/datasets/mvtec-ad
 ```
 cd <path-to-FewSOME-directory>
 
@@ -93,7 +93,7 @@ source activate myenv
 cd src
 
 # run experiment
-python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_init_seed 1001 --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/ad/mvtec/data/ --download_data True --smart_samp 0 --k 1 --alpha 1 --task test --pretrain 1 --model_type 'RESNET'
+python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_init_seed 1001 --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 0 --epochs 100 --data_path <path_to_data> --download_data True --smart_samp 0 --k 1 --alpha 1 --task test --pretrain 1 --model_type 'RESNET'
 
 ```
 
