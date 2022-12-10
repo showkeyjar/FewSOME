@@ -24,6 +24,7 @@ To run the code, set up a virtual environment in conda:
 cd <path-to-FewSOME-directory>
 conda create --name myenv
 source activate myenv
+conda config --append channels conda-forge
 while read requirement; do conda install -n myenv --yes $requirement; done < requirements.txt
 ```
 
