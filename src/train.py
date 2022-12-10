@@ -32,26 +32,21 @@ class ContrastiveLoss(torch.nn.Module):
         #get the euclidean distance between output1 and all other vectors
         for i in vectors:
           euclidean_distance += (F.pairwise_distance(output1, i)/ torch.sqrt(torch.Tensor([output1.size()[1]])).cuda())
-        #  euclidean_distance += (F.cosine_similarity(output1, i)) / torch.sqrt(torch.Tensor([output1.size()[1]])).cuda()
-          #euclidean_distance +=  torch.sum(torch.mul(output1, i)) / (torch.mul (torch.sqrt ( torch.sum( torch.square(output1) )),  torch.sqrt ( torch.sum( torch.square(i) ))      )   )
+       
 
         euclidean_distance += alpha*((F.pairwise_distance(output1, feat1)) /torch.sqrt(torch.Tensor([output1.size()[1]])).cuda() )
-        #euclidean_distance += alpha*(torch.sum(torch.mul(output1, i)) / (torch.mul (torch.sqrt ( torch.sum( torch.square(output1) )),  torch.sqrt ( torch.sum( torch.square(i) ))      )   ).cuda() )
 
         #calculate the margin
         marg = (len(vectors) + alpha) * self.margin
 
-        #penalty = (1 / (torch.sum(output1) / output1.size()[1] ) )  * 100  #output values are between 0 and 1 so don't need to square
-    #    euclidean_distance = euclidean_distance + penalty
+      
         #if v > 0.0, implement soft-boundary
         if self.v > 0.0:
             euclidean_distance = (1/self.v) * euclidean_distance
         #calculate the loss
-    #    loss_contrastive = torch.log(euclidean_distance)
-    #    loss_contrastive = ((1-label) * euclidean_distance ) + ( (label) * torch.max(torch.Tensor([ torch.tensor(0), marg - euclidean_distance])) )
+    
         loss_contrastive = ((1-label) * torch.pow(euclidean_distance, 2) * 0.5) + ( (label) * torch.pow(torch.max(torch.Tensor([ torch.tensor(0), marg - euclidean_distance])), 2) * 0.5)
-    #    print(euclidean_distance)
-    #    print(loss_contrastive)
+  
         return loss_contrastive
 
 
@@ -182,7 +177,6 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
 
 
 
-        #    seed = (epoch+1) * (index+1)
 
 
             model.train()
@@ -330,10 +324,7 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
 
         elif epoch > 1:
           decrease = (((train_losses[-3] - train_losses[-2]) / train_losses[-3]) * 100) - (((train_losses[-2] - train_losses[-1]) / train_losses[-2]) * 100)
-        #  print((((train_losses[-3] - train_losses[-2]) / train_losses[-3]) * 100))
-         # print((((train_losses[-2] - train_losses[-1]) / train_losses[-2]) * 100))
-          #print(decrease)
-
+       
           if decrease <= 0.5:
             patience += 1
 
