@@ -39,7 +39,7 @@ pip install -r requirements.txt
 cd <path-to-FewSOME-directory>
 
 # activate virtual environment
-source activate myenv
+source myenv/bin/activate
 
 # change to source directory
 cd src
@@ -55,7 +55,7 @@ python3 train.py -m model --num_ref_eval 30 --lr 1e-6 --batch_size 1 --weight_in
 cd <path-to-FewSOME-directory>
 
 # activate virtual environment
-source activate myenv
+source myenv/bin/activate
 
 # change to source directory
 cd src
@@ -71,7 +71,7 @@ python3 train.py -m model --num_ref_eval 30 --lr 1e-5 --batch_size 1 --weight_in
 cd <path-to-FewSOME-directory>
 
 # activate virtual environment
-source activate myenv
+source myenv/bin/activate
 
 # change to source directory
 cd src
@@ -88,7 +88,7 @@ This experiment requires the data to be downloaded from https://www.mvtec.com/co
 cd <path-to-FewSOME-directory>
 
 # activate virtual environment
-source activate myenv
+source myenv/bin/activate
 
 # change to source directory
 cd src
