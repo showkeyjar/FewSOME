@@ -18,14 +18,15 @@ Use the following command to clone the repository to your local machine:
 git clone https://github.com/pakdd2023anon1/FewSOME.git
 ```
 
-To run the code, set up a virtual environment in conda:
+To run the code, set up a virtual environment:
 
 ```
+pip install virtualenv
 cd <path-to-FewSOME-directory>
-conda create --name myenv
+virtualenv myenv
 source activate myenv
-conda config --append channels conda-forge
-while read requirement; do conda install -n myenv --yes $requirement; done < requirements.txt
+source myenv/bin/activate
+pip install -r requirements.txt
 ```
 
 
