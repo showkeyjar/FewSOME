@@ -7,64 +7,11 @@ import pandas as pd
 import torch
 import random
 import numpy as np
-from torchsample.transforms import RandomRotate, RandomTranslate, RandomFlip, ToTensor, Compose, RandomAffine
 from torchvision import transforms
 import cv2
 import math
 
-def rot(arr, n, x1, y1): #this is the function which rotates a given block
-    temple = []
-    for i in range(n):
-        temple.append([])
-        for j in range(n):
-            temple[i].append(arr[:, x1+i, y1+j])
-    for i in range(n):
-        for j in range(n):
-            arr[:,x1+i,y1+j] = temple[:][n-1-i][n-1-j]
-    return arr
 
-def trans(arr):
-    xres = 32
-    yres = 32
-    BLKSZ = 12 #blocksize
-    for i in range(2, BLKSZ+1):
-        for j in range(int(math.floor(float(xres)/float(i)))):
-            for k in range(int(math.floor(float(yres)/float(i)))):
-                arr=rot(arr, i, j*i, k*i)
-    for i in range(3, BLKSZ+1):
-        for j in range(int(math.floor(float(xres)/float(BLKSZ+2-i)))):
-            for k in range(int(math.floor(float(yres)/float(BLKSZ+2-i)))):
-                arr=rot(arr, BLKSZ+2-i, j*(BLKSZ+2-i), k*(BLKSZ+2-i))
-
-    return arr
-
-
-
-
-
-
-class RandomCropNumpy(object):
-    """Crops the given numpy array at a random location to have a region of
-    the given size. size can be a tuple (target_height, target_width)
-    or an integer, in which case the target will be of a square shape (size, size)
-    """
-
-    def __init__(self, size, random_state=np.random):
-
-        self.size = size
-        self.random_state = random_state
-
-    def __call__(self, img):
-        b, w, h = img.shape[:3]
-        th, tw = self.size
-        if w == tw and h == th:
-            return img
-
-        x1 = self.random_state.randint(0, w - tw)
-        y1 = self.random_state.randint(0, h - th)
-
-
-        return img[:, x1:x1 + tw, y1: y1 + th]
 
 class CIFAR10(data.Dataset):
 
