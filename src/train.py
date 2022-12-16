@@ -329,7 +329,7 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
             patience += 1
 
 
-          if epoch == epochs-1: # (patience==max_patience) | (epoch == epochs-1):
+          if (patience==max_patience) | (epoch == epochs-1):
               stop_training = True
 
 
