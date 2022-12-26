@@ -24,7 +24,6 @@ To run the code, set up a virtual environment:
 pip install virtualenv
 cd <path-to-FewSOME-directory>
 virtualenv myenv
-source activate myenv
 source myenv/bin/activate
 pip install -r requirements.txt
 ```
