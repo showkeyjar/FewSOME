@@ -1,6 +1,6 @@
 # FewSOME
 
-This repository contains a Pytorch implementation of FewSOME: Onec-Class Few Shot Anomaly Detection with Siamese Networks.
+This repository contains a Pytorch implementation of FewSOME: One-Class Few Shot Anomaly Detection with Siamese Networks.
 
 
 ## Citation 
