@@ -32,65 +32,25 @@ class ContrastiveLoss(torch.nn.Module):
         #get the euclidean distance between output1 and all other vectors
         for i in vectors:
           euclidean_distance += (F.pairwise_distance(output1, i)/ torch.sqrt(torch.Tensor([output1.size()[1]])).cuda())
-       
+
 
         euclidean_distance += alpha*((F.pairwise_distance(output1, feat1)) /torch.sqrt(torch.Tensor([output1.size()[1]])).cuda() )
 
         #calculate the margin
         marg = (len(vectors) + alpha) * self.margin
 
-      
+
         #if v > 0.0, implement soft-boundary
         if self.v > 0.0:
             euclidean_distance = (1/self.v) * euclidean_distance
         #calculate the loss
-    
+
         loss_contrastive = ((1-label) * torch.pow(euclidean_distance, 2) * 0.5) + ( (label) * torch.pow(torch.max(torch.Tensor([ torch.tensor(0), marg - euclidean_distance])), 2) * 0.5)
-  
+
         return loss_contrastive
 
 
-def write_feat_vec(ind, indexes, base_ind, feat1, model, model_name, normal_class, epoch, pass_num, dataset, task):
-    ref_images = {}
-    model.eval()
-    if task == 'train':
-        for feat in ind:
-          img1, _, _, _ = dataset.__getitem__(feat)
-          if feat == base_ind:
-            ref_images['images{}'.format(feat)] = feat1
-          else:
-            ref_images['images{}'.format(feat)] = model.forward( img1.cuda().float())
-    else:
-        gt=[]
-        count = 0
-        for feat in range(dataset.__len__()):
-          count+=1
-          if count == 2000:
-                break
-          img1, _, labels, _ = val_dataset.__getitem__(feat)
-          ref_images['images{}'.format(feat)] = model.forward( img1.cuda().float())
-          gt.append(labels)
 
-
-
-    feat_vecs = pd.DataFrame(ref_images['images1'].detach().cpu().numpy())
-    count=0
-    for j in range(1, dataset.__len__()):
-        count+=1
-        if count == 1999:
-            break
-        feat_vecs = pd.concat([feat_vecs, pd.DataFrame(ref_images['images{}'.format(j)].detach().cpu().numpy())], axis =0)
-
-
-
-    if task != 'train':
-
-        feat_vecs = pd.concat([feat_vecs.reset_index(drop=True), pd.DataFrame(gt)], axis =1)
-
-    model_name_temp = model_name + '_task_' + task + '_epoch_' + str(epoch+1) + '_pass_' + str(pass_num)
-
-
-    feat_vecs.to_csv('./outputs/ref_vec_by_pass/class_'+str(normal_class) + '/' +model_name_temp)
 
 
 def create_batches(lst, n):
@@ -99,7 +59,7 @@ def create_batches(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, epochs, criterion, alpha, model_name, indexes, data_path, normal_class, dataset_name, freeze, smart_samp, k, eval_epoch, get_visual, augment_no, model_type, bs, num_ref_eval, num_ref_dist, anchor_dist):
+def train(model, lr, weight_decay, train_dataset, val_dataset, epochs, criterion, alpha, model_name, indexes, data_path, normal_class, dataset_name, smart_samp, k, eval_epoch, model_type, bs, num_ref_eval, num_ref_dist):
     device='cuda'
     model.cuda()
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -110,14 +70,11 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
 
     ind = list(range(0, len(indexes)))
     #select datapoint from the reference set to use as anchor
-    if freeze == True:
-      np.random.seed(epochs)
-      rand_freeze = np.random.randint(len(indexes) )
-      base_ind = ind[rand_freeze]
-      feat1 = init_feat_vec(model,base_ind , train_dataset)
-    else:
-          feat1 = None
-          base_ind = -1
+    np.random.seed(epochs)
+    rand_freeze = np.random.randint(len(indexes) )
+    base_ind = ind[rand_freeze]
+    feat1 = init_feat_vec(model,base_ind , train_dataset)
+
 
 
     patience = 0
@@ -130,10 +87,6 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
     patience2 = 10
     stop_training = False
 
-    if augment_no > 0:
-        for i in range(augment_no):
-
-            ind.append(N+i)
 
     start_time = time.time()
 
@@ -155,26 +108,6 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
         for i in range(int(np.ceil(len(ind) / bs))):
 
 
-        #for i, index in enumerate(ind):
-
-            if (i == 0) & (get_visual == 1): #start of each epoch
-                write_feat_vec(ind, indexes, base_ind , feat1, model, model_name, normal_class, epoch, i, train_dataset,'train')
-                write_feat_vec(ind, indexes, base_ind , feat1, model, model_name, normal_class, epoch, i, val_dataset, 'validation')
-
-
-            elif get_visual == 2: #each pass through the model
-                write_feat_vec(ind, indexes, base_ind, feat1, model, model_name, normal_class, epoch, i, train_dataset, 'train')
-                write_feat_vec(ind, indexes, base_ind, feat1, model, model_name, normal_class, epoch, i, val_dataset, 'validation')
-
-            elif get_visual == 3: #every pass in the first epoch and then start of each epoch from there on
-                if epoch ==0:
-                    write_feat_vec(ind, indexes, base_ind, feat1, model, model_name, normal_class, epoch, i, train_dataset, 'train')
-                    write_feat_vec(ind, indexes, base_ind, feat1, model, model_name, normal_class, epoch, i, val_dataset, 'validation')
-                elif i ==0:
-                    write_feat_vec(ind, indexes, base_ind, feat1, model, model_name, normal_class, epoch, i, train_dataset, 'train')
-                    write_feat_vec(ind, indexes, base_ind, feat1, model, model_name, normal_class, epoch, i, val_dataset, 'validation')
-
-
 
 
 
@@ -192,7 +125,7 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
 
 
 
-                if (freeze == True) & (index ==base_ind):
+                if (index ==base_ind):
                   output1 = feat1
                 else:
                   output1 = model.forward(img1.float())
@@ -212,7 +145,7 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
 
                 elif smart_samp == 0:
 
-                  if (freeze == True) & (base == True):
+                  if (base == True):
                     output2 = feat1
                   else:
                     output2 = model.forward(img2.float())
@@ -276,7 +209,7 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
 
         if (eval_epoch == 1):
             output_name = model_name + '_output_epoch_' + str(epoch+1)
-            val_auc, val_loss, val_auc_min, f1, acc,df, ref_vecs = evaluate(feat1, freeze, seed, base_ind, train_dataset, val_dataset, model, dataset_name, normal_class, output_name, model_name, indexes, data_path, criterion, alpha, num_ref_eval, anchor_dist, args.mean_dist)
+            val_auc, val_loss, val_auc_min, f1, acc,df, ref_vecs = evaluate(feat1, seed, base_ind, train_dataset, val_dataset, model, dataset_name, normal_class, output_name, model_name, indexes, data_path, criterion, alpha, num_ref_eval)
             print('Validation AUC is {}'.format(val_auc))
             print("Epoch: {}, Validation loss: {}".format(epoch+1, val_loss))
             if val_auc_min > best_val_auc_min:
@@ -288,32 +221,8 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
                 best_df=df
                 max_iter = 0
 
-                model_name_temp = model_name + '_epoch_' + str(epoch+1) + '_val_auc_' + str(np.round(val_auc, 3)) + '_min_auc_' + str(np.round(val_auc_min, 3))
-                for f in os.listdir('./outputs/models/class_'+str(normal_class) + '/'):
-                  if (model_name in f) :
-                      os.remove(f'./outputs/models/class_'+str(normal_class) + '/{}'.format(f))
-                torch.save(model.state_dict(), './outputs/models/class_'+str(normal_class)+'/' + model_name_temp)
 
-
-                for f in os.listdir('./outputs/ED/class_'+str(normal_class) + '/'):
-                  if (model_name in f) :
-                      os.remove(f'./outputs/ED/class_'+str(normal_class) + '/{}'.format(f))
-                df.to_csv('./outputs/ED/class_'+str(normal_class)+'/' +model_name_temp)
-
-                for f in os.listdir('./outputs/ref_vec/class_'+str(normal_class) + '/'):
-                  if (model_name in f) :
-                    os.remove(f'./outputs/ref_vec/class_'+str(normal_class) + '/{}'.format(f))
-                ref_vecs.to_csv('./outputs/ref_vec/class_'+str(normal_class) + '/' +model_name_temp)
-
-                training_time_temp = time.time() - start_time
-                cols = ['normal_class', 'ref_seed', 'weight_seed', 'num_ref_eval', 'num_ref_dist','alpha', 'lr', 'weight_decay', 'vector_size','biases', 'smart_samp', 'k', 'v', 'contam' , 'AUC', 'epoch', 'auc_min','training_time', 'f1','acc']
-                params = [normal_class, args.seed, args.weight_init_seed, num_ref_eval, num_ref_dist, alpha, lr, weight_decay, args.vector_size, biases, smart_samp, k, args.v, args.contamination, val_auc, epoch+1, val_auc_min, training_time_temp,f1,acc]
-                string = './outputs/class_' + str(normal_class)
-                if not os.path.exists(string):
-                    os.makedirs(string)
-                pd.DataFrame([params], columns = cols).to_csv('./outputs/class_'+str(normal_class)+'/'+model_name)
-                pd.DataFrame(train_losses).to_csv('./outputs/losses/class_'+str(normal_class)+'/'+model_name)
-
+                write_results(model_name, normal_class, model, df, ref_vecs,num_ref_eval, num_ref_dist, val_auc, epoch, val_auc_min, training_time,f1,acc, train_losses)
 
             else:
                 max_iter+=1
@@ -321,16 +230,21 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
             if max_iter == patience2:
                 break
 
+        elif args.early_stopping ==1:
+            if epoch > 1:
+              decrease = (((train_losses[-3] - train_losses[-2]) / train_losses[-3]) * 100) - (((train_losses[-2] - train_losses[-1]) / train_losses[-2]) * 100)
 
-        elif epoch > 1:
-          decrease = (((train_losses[-3] - train_losses[-2]) / train_losses[-3]) * 100) - (((train_losses[-2] - train_losses[-1]) / train_losses[-2]) * 100)
-       
-          if decrease <= 0.5:
-            patience += 1
+              if decrease <= 0.5:
+                patience += 1
 
 
-          if (patience==max_patience) | (epoch == epochs-1):
-              stop_training = True
+              if (patience==max_patience) | (epoch == epochs-1):
+                  stop_training = True
+
+
+        elif (epoch == (epochs -1)) & (eval_epoch == 0):
+            stop_training = True
+
 
 
 
@@ -338,34 +252,13 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
             print("--- %s seconds ---" % (time.time() - start_time))
             training_time = time.time() - start_time
             output_name = model_name + '_output_epoch_' + str(epoch+1)
-            val_auc, val_loss, val_auc_min, f1,acc, df, ref_vecs = evaluate(feat1,freeze, seed, base_ind, train_dataset, val_dataset, model, dataset_name, normal_class, output_name, model_name, indexes, data_path, criterion, alpha, num_ref_eval, anchor_dist, args.mean_dist)
-
-            model_name_temp = model_name + '_epoch_' + str(epoch+1) + '_val_auc_' + str(np.round(val_auc, 3)) + '_min_auc_' + str(np.round(val_auc_min, 3))
-            for f in os.listdir('./outputs/models/class_'+str(normal_class) + '/'):
-              if (model_name in f) :
-                  os.remove(f'./outputs/models/class_'+str(normal_class) + '/{}'.format(f))
-            torch.save(model.state_dict(), './outputs/models/class_'+str(normal_class)+'/' + model_name_temp)
+            val_auc, val_loss, val_auc_min, f1,acc, df, ref_vecs = evaluate(feat1,seed, base_ind, train_dataset, val_dataset, model, dataset_name, normal_class, output_name, model_name, indexes, data_path, criterion, alpha, num_ref_eval)
 
 
-            for f in os.listdir('./outputs/ED/class_'+str(normal_class) + '/'):
-              if (model_name in f) :
-                  os.remove(f'./outputs/ED/class_'+str(normal_class) + '/{}'.format(f))
-            df.to_csv('./outputs/ED/class_'+str(normal_class)+'/' +model_name_temp)
-
-            for f in os.listdir('./outputs/ref_vec/class_'+str(normal_class) + '/'):
-              if (model_name in f) :
-                os.remove(f'./outputs/ref_vec/class_'+str(normal_class) + '/{}'.format(f))
-            ref_vecs.to_csv('./outputs/ref_vec/class_'+str(normal_class) + '/' +model_name_temp)
+            write_results(model_name, normal_class, model, df, ref_vecs,num_ref_eval, num_ref_dist, val_auc, epoch, val_auc_min, training_time,f1,acc, train_losses)
 
 
-             #write out all details of model training
-            cols = ['normal_class', 'ref_seed', 'weight_seed', 'num_ref_eval', 'num_ref_dist','alpha', 'lr', 'weight_decay', 'vector_size','biases', 'smart_samp', 'k', 'v', 'contam' , 'AUC', 'epoch', 'auc_min','training_time', 'f1','acc']
-            params = [normal_class, args.seed, args.weight_init_seed, num_ref_eval, num_ref_dist, alpha, lr, weight_decay, args.vector_size, biases, smart_samp, k, args.v, args.contamination, val_auc, epoch+1, val_auc_min, training_time,f1,acc]
-            string = './outputs/class_' + str(normal_class)
-            if not os.path.exists(string):
-                os.makedirs(string)
-            pd.DataFrame([params], columns = cols).to_csv('./outputs/class_'+str(normal_class)+'/'+model_name)
-            pd.DataFrame(train_losses).to_csv('./outputs/losses/class_'+str(normal_class)+'/'+model_name)
+
 
 
             break
@@ -374,15 +267,42 @@ def train(model, stop_gradient, lr, weight_decay, train_dataset, val_dataset, ep
 
     print("Finished Training")
     if eval_epoch == 1:
-        print("AUC was {} on epoch {}".format(best_val_auc, best_epoch))
+        print("AUC was {} on epoch {}".format(best_val_auc_min, best_epoch))
         return best_val_auc, best_epoch, best_val_auc_min, training_time_temp, best_f1, best_acc,train_losses
     else:
-        print("AUC was {} on epoch {}".format(val_auc, epoch))
+        print("AUC was {} on epoch {}".format(val_auc_min, epoch))
         return val_auc, epoch, val_auc_min, training_time, f1,acc, train_losses
 
 
 
 
+def write_results(model_name, normal_class, model, df, ref_vecs,num_ref_eval, num_ref_dist, val_auc, epoch, val_auc_min, training_time,f1,acc, train_losses):
+    model_name_temp = model_name + '_epoch_' + str(epoch+1) + '_val_auc_' + str(np.round(val_auc, 3)) + '_min_auc_' + str(np.round(val_auc_min, 3))
+    for f in os.listdir('./outputs/models/class_'+str(normal_class) + '/'):
+      if (model_name in f) :
+          os.remove(f'./outputs/models/class_'+str(normal_class) + '/{}'.format(f))
+    torch.save(model.state_dict(), './outputs/models/class_'+str(normal_class)+'/' + model_name_temp)
+
+
+    for f in os.listdir('./outputs/ED/class_'+str(normal_class) + '/'):
+      if (model_name in f) :
+          os.remove(f'./outputs/ED/class_'+str(normal_class) + '/{}'.format(f))
+    df.to_csv('./outputs/ED/class_'+str(normal_class)+'/' +model_name_temp)
+
+    for f in os.listdir('./outputs/ref_vec/class_'+str(normal_class) + '/'):
+      if (model_name in f) :
+        os.remove(f'./outputs/ref_vec/class_'+str(normal_class) + '/{}'.format(f))
+    ref_vecs.to_csv('./outputs/ref_vec/class_'+str(normal_class) + '/' +model_name_temp)
+
+
+     #write out all details of model training
+    cols = ['normal_class', 'ref_seed', 'weight_seed', 'num_ref_eval', 'num_ref_dist','alpha', 'lr', 'weight_decay', 'vector_size','biases', 'smart_samp', 'k', 'v', 'contam' , 'AUC', 'epoch', 'auc_min','training_time', 'f1','acc']
+    params = [normal_class, args.seed, args.weight_init_seed, num_ref_eval, num_ref_dist, args.alpha, args.lr, args.weight_decay, args.vector_size, args.biases, args.smart_samp, args.k, args.v, args.contamination, val_auc, epoch+1, val_auc_min, training_time,f1,acc]
+    string = './outputs/class_' + str(normal_class)
+    if not os.path.exists(string):
+        os.makedirs(string)
+    pd.DataFrame([params], columns = cols).to_csv('./outputs/class_'+str(normal_class)+'/'+model_name)
+    pd.DataFrame(train_losses).to_csv('./outputs/losses/class_'+str(normal_class)+'/'+model_name)
 
 
 def init_feat_vec(model,base_ind, train_dataset ):
@@ -430,7 +350,6 @@ def parse_arguments():
     parser.add_argument('--seed', type=int, default = 100)
     parser.add_argument('--weight_init_seed', type=int, default = 100)
     parser.add_argument('--alpha', type=float, default = 0)
-    parser.add_argument('--freeze', default = True)
     parser.add_argument('--smart_samp', type = int, choices = [0,1], default = 0)
     parser.add_argument('--k', type = int, default = 0)
     parser.add_argument('--epochs', type=int, required=True)
@@ -441,14 +360,10 @@ def parse_arguments():
     parser.add_argument('--task',  default='train', choices = ['test', 'train'])
     parser.add_argument('--eval_epoch', type=int, default=0)
     parser.add_argument('--pretrain', type=int, default=1)
-    parser.add_argument('--get_visual', choices = [0,1,2,3], type=int, default=0)
-    parser.add_argument('--augment_no', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--biases', type=int, default=1)
-    parser.add_argument('--stop_gradient', type=int, default=1)
     parser.add_argument('--num_ref_dist', type=int, default=None)
-    parser.add_argument('--anchor_dist', type=int, default=0)
-    parser.add_argument('--mean_dist', type=int, default=0)
+    parser.add_argument('--early_stopping', type=int, default=0)
     parser.add_argument('-i', '--index', help='string with indices separated with comma and whitespace', type=str, default = [], required=False)
     args = parser.parse_args()
     return args
@@ -462,8 +377,6 @@ if __name__ == '__main__':
     normal_class = args.normal_class
     N = args.num_ref
     seed = args.seed
-    anchor_dist = args.anchor_dist
-    freeze = args.freeze
     epochs = args.epochs
     data_path = args.data_path
     download_data = args.download_data
@@ -479,13 +392,10 @@ if __name__ == '__main__':
     v = args.v
     task = args.task
     eval_epoch = args.eval_epoch
-    get_visual = args.get_visual
-    augment_no = args.augment_no
     bs = args.batch_size
     biases = args.biases
     num_ref_eval = args.num_ref_eval
     num_ref_dist = args.num_ref_dist
-    stop_gradient = args.stop_gradient
     if num_ref_eval == None:
         num_ref_eval = N
     if num_ref_dist == None:
@@ -601,4 +511,4 @@ if __name__ == '__main__':
 
     model_name = model_name + '_normal_class_' + str(normal_class) + '_seed_' + str(seed)
     criterion = ContrastiveLoss(v)
-    auc, epoch, auc_min, training_time, f1,acc, train_losses= train(model,stop_gradient,lr, weight_decay, train_dataset, val_dataset, epochs, criterion, alpha, model_name, indexes, data_path, normal_class, dataset_name, freeze, smart_samp,k, eval_epoch, get_visual, augment_no, model_type, bs, num_ref_eval, num_ref_dist, anchor_dist)
+    auc, epoch, auc_min, training_time, f1,acc, train_losses= train(model,lr, weight_decay, train_dataset, val_dataset, epochs, criterion, alpha, model_name, indexes, data_path, normal_class, dataset_name, smart_samp,k, eval_epoch, model_type, bs, num_ref_eval, num_ref_dist)
