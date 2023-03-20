@@ -125,7 +125,6 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
     parser.add_argument('--pretrain', type=int, default=1)
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--biases', type=int, default=1)
-    parser.add_argument('--stop_gradient', type=int, default=1)
     parser.add_argument('--num_ref_dist', type=int, default=None)
     parser.add_argument('--early_stopping', type=int, default=0)
     parser.add_argument('-i', '--index', help='string with indices separated with comma and whitespace', type=str, default = [], required=False)
@@ -183,6 +182,15 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
 '--early_stopping' - if the rate at which the loss is decreasing is less than .5% for a patience of 2, stop training.
 
 '-i' - specify indexes of training set to have as a reference set 
+
+
+## Output Files 
+The code will create an 'outputs' folder. 
+- For MNIST, Fashion MNIST and CIFAR-10, a directory for each class will be created (Example: 'outputs/class_0') that will contain all training details
+- 'outputs/models/' - where each model is stored
+- 'outputs/ED/' - where the Euclidean distance for each test data sample is stored. Each row is a test sample with columns 'label' (0 for anomaly and 1 for normal), 'minimum_dists' (the distance to nearest representation in the Reference Set), 'means' (the mean distance to each representation in the Reference set) and a column that shows the distance of the representation of the test sample to each representation in the Reference Set.
+- 'outputs/losses/' - the training loss for each epoch
+- outputs/inference_times/' - the inference times 
 
 
 
