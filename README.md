@@ -44,7 +44,7 @@ source myenv/bin/activate
 cd src
 
 # run experiment
-python3 train.py -m model --num_ref_eval 30 --lr 1e-6 --batch_size 1 --weight_init_seed 1001 --dataset 'mnist' --normal_class 6 -N 30 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.8 --vector_size 1024 --task test --pretrain 1 --model_type 'MNIST_VGG3'
+python3 train.py -m model --num_ref_eval 30 --lr 1e-6 --batch_size 1 --weight_init_seed 1001 --dataset 'mnist' --normal_class 6 -N 30 --seed 1001 --eval_epoch 0 --epochs 6 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.8 --vector_size 1024 --task test --pretrain 1 --model_type 'MNIST_VGG3'
 
 ```
 
@@ -60,7 +60,7 @@ source myenv/bin/activate
 cd src
 
 # run experiment
-python3 train.py -m model --num_ref_eval 30 --lr 1e-5 --batch_size 1 --weight_init_seed 1001 --dataset 'cifar10' --normal_class 0 -N 30 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.5 --vector_size 2048 --task test --pretrain 1 --model_type 'CIFAR_VGG3'
+python3 train.py -m model --num_ref_eval 30 --lr 1e-5 --batch_size 1 --weight_init_seed 1001 --dataset 'cifar10' --normal_class 0 -N 30 --seed 1001 --eval_epoch 0 --epochs 5 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.5 --vector_size 2048 --task test --pretrain 1 --model_type 'CIFAR_VGG3'
 
 ```
 
@@ -76,7 +76,7 @@ source myenv/bin/activate
 cd src
 
 # run experiment
-python3 train.py -m model --num_ref_eval 30 --lr 1e-4 --batch_size 16 --weight_init_seed 1001 --dataset 'fashion' --normal_class 9 -N 30 --seed 1001 --eval_epoch 0 --epochs 100 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.1 --vector_size 2048 --task test --pretrain 1 --model_type 'FASHION_VGG3'
+python3 train.py -m model --num_ref_eval 30 --lr 1e-4 --batch_size 16 --weight_init_seed 1001 --dataset 'fashion' --normal_class 9 -N 30 --seed 1001 --eval_epoch 0 --epochs 6 --data_path ~/data/ --download_data True --smart_samp 0 --k 1 --alpha 0.1 --vector_size 2048 --task test --pretrain 1 --model_type 'FASHION_VGG3'
 
 ```
 
@@ -93,7 +93,7 @@ source myenv/bin/activate
 cd src
 
 # run experiment
-python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_init_seed 1001 --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 0 --epochs 100 --data_path <path_to_data> --download_data True --smart_samp 0 --k 1 --alpha 1 --task test --pretrain 1 --model_type 'RESNET'
+python3 train.py -m model --num_ref_eval 60 --lr 1e-4 --batch_size 1 --weight_init_seed 1001 --dataset 'mvtec' --normal_class 13 -N 60 --seed 1001 --eval_epoch 1 --epochs 100 --data_path <path_to_data> --download_data True --smart_samp 0 --k 1 --alpha 1 --task test --pretrain 1 --model_type 'RESNET'
 
 ```
 
@@ -124,7 +124,6 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
     parser.add_argument('--task',  default='train', choices = ['test', 'train'])
     parser.add_argument('--eval_epoch', type=int, default=0)
     parser.add_argument('--pretrain', type=int, default=1)
-    parser.add_argument('--get_visual', choices = [0,1,2,3], type=int, default=0)
     parser.add_argument('--augment_no', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--biases', type=int, default=1)
@@ -132,6 +131,7 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
     parser.add_argument('--num_ref_dist', type=int, default=None)
     parser.add_argument('--anchor_dist', type=int, default=0)
     parser.add_argument('--mean_dist', type=int, default=0)
+    parser.add_argument('--early_stopping', type=int, default=0)
     parser.add_argument('-i', '--index', help='string with indices separated with comma and whitespace', type=str, default = [], required=False)
 
 ```
@@ -182,13 +182,13 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
 
 '--pretrain' - specifies whether to use pretrained weights 
 
-'--get_visual' - a value of 1 saves the feature vectures for the reference images and 2000 validation images at the beginning of each epoch, a value of 2 saves the feature vectors after each pass through the model, a value of 3 save the feature vectors for each pass in the first epoch and then at the start of each epoch.
-
 '--augment_no' - specify number of reference images to augment beyong recognition so that they are labelled as anomalies (not used)
 
 '--batch_size' - specify the batch size 
 
 '--biases' - specify whether to turn off or on biases. 
+
+'--early_stopping' - if the rate at which the loss is decreasing is less than .5% for a patience of 2, stop training.
 
 '-i' - specify indexes of training set to have as a reference set 
 
