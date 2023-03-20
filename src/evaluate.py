@@ -24,27 +24,27 @@ class ContrastiveLoss(torch.nn.Module):
         #get the euclidean distance between output1 and all other vectors
         for i in vectors:
           euclidean_distance += (F.pairwise_distance(output1, i)/ torch.sqrt(torch.Tensor([output1.size()[1]])).cuda())
-       
+
 
         euclidean_distance += alpha*((F.pairwise_distance(output1, feat1)) /torch.sqrt(torch.Tensor([output1.size()[1]])).cuda() )
 
         #calculate the margin
         marg = (len(vectors) + alpha) * self.margin
 
-      
+
         #if v > 0.0, implement soft-boundary
         if self.v > 0.0:
             euclidean_distance = (1/self.v) * euclidean_distance
         #calculate the loss
-    
+
         loss_contrastive = ((1-label) * torch.pow(euclidean_distance, 2) * 0.5) + ( (label) * torch.pow(torch.max(torch.Tensor([ torch.tensor(0), marg - euclidean_distance])), 2) * 0.5)
-  
+
         return loss_contrastive
 
 
 
 
-def evaluate(feat1, freeze , seed, base_ind, ref_dataset, val_dataset, model, dataset_name, normal_class, output_name, model_name, indexes, data_path, criterion, alpha, num_ref_eval, anchor_dist, mean_dist):
+def evaluate(feat1, seed, base_ind, ref_dataset, val_dataset, model, dataset_name, normal_class, output_name, model_name, indexes, data_path, criterion, alpha, num_ref_eval):
 
     model.eval()
 
@@ -58,23 +58,13 @@ def evaluate(feat1, freeze , seed, base_ind, ref_dataset, val_dataset, model, da
     #loop through the reference images and 1) get the reference image from the dataloader, 2) get the feature vector for the reference image and 3) initialise the values of the 'out' dictionary as a list.
     for i in ind:
       img1, _, _, _ = ref_dataset.__getitem__(i)
-      if (i == base_ind) & (freeze == True):
+      if (i == base_ind):
         ref_images['images{}'.format(i)] = feat1
       else:
         ref_images['images{}'.format(i)] = model.forward( img1.cuda().float())
 
       outs['outputs{}'.format(i)] =[]
 
-
-    if mean_dist == 1:
-        for x,i in enumerate(ind):
-          img1, _, _, _ = ref_dataset.__getitem__(i)
-          if x == 0:
-              mvec= model.forward( img1.cuda().float())
-          else:
-              mvec+= model.forward( img1.cuda().float())
-
-        mvec = mvec /len(ind)
 
 
 
@@ -103,32 +93,18 @@ def evaluate(feat1, freeze , seed, base_ind, ref_dataset, val_dataset, model, da
         #calculate the distance from the test image to each of the datapoints in the reference set
 
 
-        if anchor_dist == True:
-            euclidean_distance = (F.pairwise_distance(out, feat1) / torch.sqrt(torch.Tensor([out.size()[1]])).cuda() )
-            minimum_dists.append(euclidean_distance.item())
-            means.append(euclidean_distance.item())
+        for j in range(0, num_ref_eval):
+            euclidean_distance = (F.pairwise_distance(out, ref_images['images{}'.format(j)]) / torch.sqrt(torch.Tensor([out.size()[1]])).cuda() ) + (alpha*(F.pairwise_distance(out, feat1) /torch.sqrt(torch.Tensor([out.size()[1]])).cuda() ))
 
-        elif mean_dist == 1:
-            euclidean_distance = (F.pairwise_distance(out, mvec) / torch.sqrt(torch.Tensor([out.size()[1]])).cuda() ) + (alpha*(F.pairwise_distance(out, feat1) /torch.sqrt(torch.Tensor([out.size()[1]])).cuda() ))
-            minimum_dists.append(euclidean_distance.item())
-            means.append(euclidean_distance.item())
-        else:
-            for j in range(0, num_ref_eval):
-                if (freeze == True):
-                    euclidean_distance = (F.pairwise_distance(out, ref_images['images{}'.format(j)]) / torch.sqrt(torch.Tensor([out.size()[1]])).cuda() ) + (alpha*(F.pairwise_distance(out, feat1) /torch.sqrt(torch.Tensor([out.size()[1]])).cuda() ))
-                else:
-                    euclidean_distance = (F.pairwise_distance(out, ref_images['images{}'.format(j)]) / torch.sqrt(torch.Tensor([out.size()[1]])).cuda() )
+            outs['outputs{}'.format(j)].append(euclidean_distance.item())
+            total += euclidean_distance.item()
+            if euclidean_distance.detach().item() < mini:
+              mini = euclidean_distance.item()
 
+            loss_sum += criterion(out,[ref_images['images{}'.format(j)]], feat1,label, alpha).item()
 
-                outs['outputs{}'.format(j)].append(euclidean_distance.item())
-                total += euclidean_distance.item()
-                if euclidean_distance.detach().item() < mini:
-                  mini = euclidean_distance.item()
-
-                loss_sum += criterion(out,[ref_images['images{}'.format(j)]], feat1,label, alpha).item()
-
-            minimum_dists.append(mini)
-            means.append(total/len(indexes))
+        minimum_dists.append(mini)
+        means.append(total/len(indexes))
 
         total_times.append(time.time()-t1)
 
@@ -144,11 +120,10 @@ def evaluate(feat1, freeze , seed, base_ind, ref_dataset, val_dataset, model, da
 
     cols = ['label','minimum_dists', 'means']
     df = pd.concat([pd.DataFrame(labels, columns = ['label']), pd.DataFrame(minimum_dists, columns = ['minimum_dists']),  pd.DataFrame(means, columns = ['means'])], axis =1)
-   
-    if (anchor_dist ==0) & (mean_dist == 0):
-        for i in range(0, num_ref_eval):
-            df= pd.concat([df, pd.DataFrame(outs['outputs{}'.format(i)])], axis =1)
-            cols.append('ref{}'.format(i))
+
+    for i in range(0, num_ref_eval):
+        df= pd.concat([df, pd.DataFrame(outs['outputs{}'.format(i)])], axis =1)
+        cols.append('ref{}'.format(i))
 
     df.columns=cols
     df = df.sort_values(by='minimum_dists', ascending = False).reset_index(drop=True)
@@ -175,8 +150,6 @@ def evaluate(feat1, freeze , seed, base_ind, ref_dataset, val_dataset, model, da
     print('AUC based on minimum vector {}'.format(auc_min))
     print('F1 based on minimum vector {}'.format(f1))
     print('Balanced accuracy based on minimum vector {}'.format(acc))
-    print('Anoms based on minimum vector {}'.format(anoms))
-    print('Normal acc based on minimum vector {}'.format(normals))
     fpr, tpr, thresholds = roc_curve(np.array(df['label']),np.array(df['means']))
     auc = metrics.auc(fpr, tpr)
 
@@ -239,7 +212,6 @@ def parse_arguments():
     parser.add_argument('--seed', type=int, default = 100)
     parser.add_argument('--weight_init_seed', type=int, default = 100)
     parser.add_argument('--alpha', type=float, default = 0)
-    parser.add_argument('--freeze', default = True)
     parser.add_argument('--epochs', type=int, required=True)
     parser.add_argument('--data_path',  required=True)
     parser.add_argument('--download_data',  default=True)
@@ -249,8 +221,6 @@ def parse_arguments():
     parser.add_argument('--eval_epoch', type=int, default=0)
     parser.add_argument('--biases', type=int, default=1)
     parser.add_argument('--pretrain', type=int, default=1)
-    parser.add_argument('--anchor_dist', type=int, default=0)
-    parser.add_argument('--mean_dist', type=int, default=0)
     parser.add_argument('-i', '--index', help='string with indices separated with comma and whitespace', type=str, default = [], required=False)
     args = parser.parse_args()
     return args
@@ -266,7 +236,6 @@ if __name__ == '__main__':
     normal_class = args.normal_class
     N = args.num_ref
     seed = args.seed
-    freeze = args.freeze
     epochs = args.epochs
     data_path = args.data_path
     download_data = args.download_data
@@ -338,16 +307,11 @@ if __name__ == '__main__':
     ref_dataset = load_dataset(dataset, indexes, normal_class, 'train', data_path, download_data=True)
     val_dataset = load_dataset(dataset, indexes, normal_class, 'test', data_path, download_data=True)
 
-    #freeze vector
-    ind=list(range(0,len(indexes)))
-    np.random.seed(epochs)
-    if freeze == True:
-        rand_freeze = np.random.randint(len(indexes) )
-        base_ind = ind[rand_freeze]
-        feat1 = init_feat_vec(model.cuda(),base_ind, ref_dataset )
-    else:
-        feat1 = None
-        base_ind = -1
+
+    rand_freeze = np.random.randint(len(indexes) )
+    base_ind = ind[rand_freeze]
+    feat1 = init_feat_vec(model.cuda(),base_ind, ref_dataset )
+
 
     model.load_state_dict(torch.load(model_path + model_name))
     model.cuda()
@@ -358,7 +322,7 @@ if __name__ == '__main__':
 
 
 
-    val_auc, val_loss, val_auc_min, f1,acc, df, ref_vecs = evaluate(feat1, freeze, seed, base_ind, ref_dataset, val_dataset, model, dataset, normal_class, output_name, model_name, indexes, data_path, criterion, alpha, num_ref_eval, args.anchor_dist, args.mean_dist)
+    val_auc, val_loss, val_auc_min, f1,acc, df, ref_vecs = evaluate(feat1, seed, base_ind, ref_dataset, val_dataset, model, dataset, normal_class, output_name, model_name, indexes, data_path, criterion, alpha, num_ref_eval)
 
 
     print('AUC is {}'.format(val_auc_min))
