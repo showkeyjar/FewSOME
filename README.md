@@ -113,7 +113,6 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
     parser.add_argument('--seed', type=int, default = 100)
     parser.add_argument('--weight_init_seed', type=int, default = 100)
     parser.add_argument('--alpha', type=float, default = 0)
-    parser.add_argument('--freeze', default = True)
     parser.add_argument('--smart_samp', type = int, choices = [0,1], default = 0)
     parser.add_argument('--k', type = int, default = 0)
     parser.add_argument('--epochs', type=int, required=True)
@@ -124,13 +123,10 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
     parser.add_argument('--task',  default='train', choices = ['test', 'train'])
     parser.add_argument('--eval_epoch', type=int, default=0)
     parser.add_argument('--pretrain', type=int, default=1)
-    parser.add_argument('--augment_no', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--biases', type=int, default=1)
     parser.add_argument('--stop_gradient', type=int, default=1)
     parser.add_argument('--num_ref_dist', type=int, default=None)
-    parser.add_argument('--anchor_dist', type=int, default=0)
-    parser.add_argument('--mean_dist', type=int, default=0)
     parser.add_argument('--early_stopping', type=int, default=0)
     parser.add_argument('-i', '--index', help='string with indices separated with comma and whitespace', type=str, default = [], required=False)
 
@@ -160,8 +156,6 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
 
 '--alpha' - specify the value of alpha between 0 and 1.
 
-'--freeze' -- specify whether to freeze the values of the feature embeddings of one of the reference images known as the 'anchor'
-
 '--smart_samp' - specify whether to pair a reference image with reference images that have the largest euclidean distance.
 
 '--k' - specify the number of reference images to calculate the distance from 
@@ -181,8 +175,6 @@ parser.add_argument('-m', '--model_name', type=str, required=True)
 '--eval_epoch' - specifies whether to evaluate the model after each epoch 
 
 '--pretrain' - specifies whether to use pretrained weights 
-
-'--augment_no' - specify number of reference images to augment beyong recognition so that they are labelled as anomalies (not used)
 
 '--batch_size' - specify the batch size 
 
