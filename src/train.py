@@ -140,7 +140,7 @@ def train(model, lr, weight_decay, train_dataset, val_dataset, epochs, criterion
                   for j in range(0, k):
 
                     if (ind2[j] != base_ind) & (index != ind2[j]):
-                      output2=model(train_dataset.__getitem__(ind[j], seed, base_ind)[0].to(device).float())
+                      output2=model(train_dataset.__getitem__(ind2[j], seed, base_ind)[0].to(device).float())
                       vecs.append(output2)
 
                 elif smart_samp == 0:
